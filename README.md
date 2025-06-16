@@ -269,11 +269,97 @@ SELECT total_penggunaan_promosi('PR011') AS jumlah_penggunaan;
 ### 4. Kalkulasi Harga Setelah Promo
 Mengurangi harga awal dengan persentase atau nilai diskon dari promosi yang valid.
 
+```sql
+DELIMITER //
+
+CREATE FUNCTION harga_setelah_promo(p_id CHAR(10), harga_awal DECIMAL(10, 2))
+RETURNS DECIMAL(10,2)
+READS SQL DATA
+BEGIN
+    DECLARE diskon_persen DECIMAL(5,2);
+    DECLARE minimum INT;
+    DECLARE harga_akhir DECIMAL(10,2);
+
+    -- Ambil diskon dan syarat minimum_pembelian dari promosi yang masih berlaku
+    SELECT diskon, minimum_pembelian
+    INTO diskon_persen, minimum
+    FROM PROMOSI
+    WHERE id_promosi = p_id
+      AND CURDATE() BETWEEN tanggal_mulai AND tanggal_berakhir;
+
+    -- Jika promosi tidak ditemukan atau tidak berlaku
+    IF diskon_persen IS NULL OR minimum IS NULL THEN
+        RETURN harga_awal;
+    END IF;
+
+    -- Jika harga tidak memenuhi minimum pembelian, tidak dapat diskon
+    IF harga_awal < minimum THEN
+        RETURN harga_awal;
+    END IF;
+
+    -- Hitung harga akhir setelah diskon
+    SET harga_akhir = harga_awal - (harga_awal * (diskon_persen / 100));
+
+    RETURN harga_akhir;
+END;
+//
+
+DELIMITER ;
+
+```
+```sql
+SELECT harga_setelah_promo('PR014', 50000) AS harga_setelah_diskon;
+```
+jika memenuhi semua syarat, maka harga akan di potong diskon
+![image](https://github.com/user-attachments/assets/9caedac6-8c98-48b8-a711-a72598249365)
+![image](https://github.com/user-attachments/assets/ec5fe462-d7ed-4735-8d12-cf86d419160e)
+
+misalnya minimum pembelian tidka terpenuhi,
+```sql
+SELECT harga_setelah_promo('PR014', 10000) AS harga_setelah_diskon;
+```
+![image](https://github.com/user-attachments/assets/98ab5944-6d2f-4286-96d2-73b0e5b5a2c7)
+
+
 ### 5. Kalkulasi Harga Makanan dalam Keranjang
 Menghitung total harga makanan berdasarkan kuantitas dan harga satuan masing-masing item dalam keranjang.
 
+```sql
+
+DELIMITER //
+CREATE FUNCTION total_harga_keranjang(p_transaksi CHAR(19))
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    DECLARE total DECIMAL(10,2);
+    SELECT SUM(m.harga * tm.jumlah)
+    INTO total
+    FROM TRANSAKSI_MAKANAN tm
+    JOIN MAKANAN m ON tm.makanan_id_makanan = m.id_makanan
+    WHERE tm.transaksi_id_transaksi = p_transaksi;
+    RETURN IFNULL(total, 0);
+END;
+//
+DELIMITER ;
+```
+```sql
+SELECT total_harga_keranjang('TRX202506100001');
+SELECT total_harga_keranjang('TRX202506100002');
+
+```
+![image](https://github.com/user-attachments/assets/8e0d36ed-ad58-4430-ba22-29968924d826)
+![image](https://github.com/user-attachments/assets/00b3d965-97ce-43dd-943a-9ac426ea73c7)
+
+
 ### 6. Kembalikan Stok Makanan
 Mengembalikan stok makanan ke jumlah awal apabila transaksi dibatalkan.
+
+```sql
+
+```
+```sql
+
+```
 
 ### 7. Cek Poin untuk Free Tiket
 Mengecek jika poin pelanggan >= 100, maka tiket gratis akan diterapkan.
