@@ -350,18 +350,7 @@ SELECT total_harga_keranjang('TRX202506100002');
 ![image](https://github.com/user-attachments/assets/8e0d36ed-ad58-4430-ba22-29968924d826)
 ![image](https://github.com/user-attachments/assets/00b3d965-97ce-43dd-943a-9ac426ea73c7)
 
-
-### 6. Kembalikan Stok Makanan [GAJADI DELETE SOON]
-Mengembalikan stok makanan ke jumlah awal apabila transaksi dibatalkan.
-
-```sql
-
-```
-```sql
-
-```
-
-### 7. Cek Poin untuk Free Tiket
+### 6. Cek Poin untuk Free Tiket
 Mengecek jika poin pelanggan >= 100, maka tiket gratis akan diterapkan.
 
 ```sql
@@ -386,7 +375,7 @@ SELECT jumlah_tiket_gratis('P0002');
 ```
 
 
-### 8. Konversi Total Harga Menjadi Poin
+### 7. Konversi Total Harga Menjadi Poin
 Mengubah total harga transaksi menjadi poin, misalnya setiap Rp25.000 = 1 poin.
 
 
@@ -407,7 +396,7 @@ SELECT harga_ke_poin(126000); -- Hasil: 5
 ![image](https://github.com/user-attachments/assets/eebe4ddc-1c71-4c3a-aecf-2b179cfed174)
 
 
-### 9. Hitung Pajak
+### 8. Hitung Pajak
 Menambahkan pajak (misal 10%) dari subtotal transaksi.
 
 ```sql
@@ -426,7 +415,7 @@ SELECT hitung_pajak(100000); -- Hasil: 10000
 ```
 ![image](https://github.com/user-attachments/assets/4730e60b-5814-4f4a-beae-002c5b8e3eb4)
 
-### 10. Hitung Refund Pembatalan
+### 9. Hitung Refund Pembatalan
 Menghitung nominal refund sesuai kebijakan (misal potongan 20% dari total).
 
 ```sql
@@ -445,7 +434,7 @@ SELECT hitung_refund(100000); -- Hasil: 80000
 ```
 
 
-### 11. Hitung Total Transaksi
+### 10. Hitung Total Transaksi
 Menjumlahkan subtotal, pajak, biaya admin, dan dikurangi diskon jika ada.
 
 ```sql
@@ -464,7 +453,7 @@ SELECT hitung_total(100000, 10000, 5000, 15000); -- Hasil: 100000
 ```
 
 
-### 12. Hitung Harga Kursi
+### 11. Hitung Harga Kursi
 Mengembalikan harga berdasarkan banyaknya kursi yang dipesan.
 
 ```sql
@@ -482,6 +471,35 @@ DELIMITER ;
 SELECT harga_kursi(3, 45000); -- Hasil: 135000
 ```
 
+### 12. Menghitunga Pelanggan Hari ini
+Menghitung junlah pelanggan yang melakukan transaksi dalam satu hari
+
+```sql
+
+DELIMITER $$
+CREATE FUNCTION hitung_pelanggan_hari_ini(p_date DATE) 
+RETURNS INTEGER  
+DETERMINISTIC
+BEGIN 
+    DECLARE jumlah_pelanggan_hari_ini INT;
+
+    SELECT COUNT(DISTINCT pelanggan_id_pelanggan)
+    INTO jumlah_pelanggan_hari_ini
+    FROM TRANSAKSI t
+    WHERE DATE(t.tanggal_transaksi) = p_date;
+
+    RETURN jumlah_pelanggan_hari_ini;
+END $$
+DELIMITER ;
+```
+
+```sql
+SELECT hitung_pelanggan_hari_ini('2025-06-10')
+
+```
+![image](https://github.com/user-attachments/assets/2db79491-c158-43bc-b5f7-359cc3719205)
+
+![image](https://github.com/user-attachments/assets/8277b90b-d4cf-475d-8a9a-dc5872f0b839)
 
 ---
 
